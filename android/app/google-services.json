@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "101465307454",
+    "project_id": "gr09-astrovibe-2025",
+    "storage_bucket": "gr09-astrovibe-2025.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:101465307454:android:8310c5a1e9335f92f5546f",
+        "android_client_info": {
+          "package_name": "com.example.astro_vibe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNEDniGrt_CzDLwP7HWpfDuP-CCnHp3RA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
