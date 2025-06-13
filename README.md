@@ -1,1 +1,3 @@
-# gr09-astrovibe-2025-intersession
+# AstroVibe
+
+A Flutter app with Firebase authentication and automated distribution.
