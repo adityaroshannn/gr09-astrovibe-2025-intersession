@@ -28,8 +28,11 @@ jobs:
     - name: Install dependencies
       run: flutter pub get
       
+    - name: Disable web platform
+      run: flutter config --no-enable-web
+      
     - name: Build release APK
-      run: flutter build apk --release
+      run: flutter build apk --release --target-platform android-arm,android-arm64,android-x64
       
     - name: Install Firebase CLI
       run: |
