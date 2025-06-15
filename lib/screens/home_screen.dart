@@ -1,31 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  Future<void> _signOut(BuildContext context) async {
-    try {
-      // TODO: Implement Firebase sign out
-      await Future.delayed(Duration(seconds: 1)); // Simulated delay
-      if (context.mounted) {
-        Navigator.pushReplacementNamed(context, '/login');
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error signing out')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    
+    // Check if user is authenticated
+    if (user == null) {
+      // Show error message and redirect to login
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please log in to access the home screen'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+        Navigator.pushNamedAndRemoveUntil(context, "/", (route) => false);
+      });
+      
+      // Show loading while redirecting
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('AstroVibe'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _signOut(context),
+            icon: const Icon(Icons.person_outline),
+            onPressed: () => Navigator.pushNamed(context, '/profile'),
           ),
         ],
       ),

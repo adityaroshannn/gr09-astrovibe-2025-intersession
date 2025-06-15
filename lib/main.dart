@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/profile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,12 +56,58 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute: '/login',
+      initialRoute: "/",
       routes: {
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(),
-        '/home': (context) => const HomeScreen(),
+        "/": (context) => LoginScreen(),
+        "/register": (context) => RegisterScreen(),
+        "/home": (context) => HomeScreen(),
+        "/profile": (context) => ProfileScreen(),
       },
     );
+  }
+}
+
+class AuthWrapper extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        // Show loading while checking auth state
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+        
+        // If user is logged in, show home screen
+        if (snapshot.hasData && snapshot.data != null) {
+          return HomeScreen();
+        }
+        
+        // If no user, show login screen
+        return LoginScreen();
+      },
+    );
+  }
+}
+
+// Simple router for manual navigation
+class AppRouter {
+  static Route<dynamic> generateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case '/login':
+        return MaterialPageRoute(builder: (_) => LoginScreen());
+      case '/register':
+        return MaterialPageRoute(builder: (_) => RegisterScreen());
+      case '/home':
+        return MaterialPageRoute(builder: (_) => HomeScreen());
+      case '/profile':
+        return MaterialPageRoute(builder: (_) => ProfileScreen());
+      default:
+        return MaterialPageRoute(builder: (_) => LoginScreen());
+    }
   }
 }
