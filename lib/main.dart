@@ -6,6 +6,7 @@ import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/horoscope_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -62,6 +63,7 @@ class MyApp extends StatelessWidget {
         "/register": (context) => RegisterScreen(),
         "/home": (context) => HomeScreen(),
         "/profile": (context) => ProfileScreen(),
+        "/horoscope": (context) => HoroscopeScreen(),
       },
     );
   }
