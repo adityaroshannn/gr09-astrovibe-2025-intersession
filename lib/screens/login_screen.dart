@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
+import '../services/notification_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -60,6 +61,9 @@ class _LoginScreenState extends State<LoginScreen> {
             duration: Duration(seconds: 2),
           ),
         );
+        
+        // Show horoscope notification after successful login
+        _showLoginSuccessNotification();
       }
       
     } catch (e) {
@@ -94,6 +98,19 @@ class _LoginScreenState extends State<LoginScreen> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  /// Show notification after successful login
+  void _showLoginSuccessNotification() async {
+    try {
+      // Wait a bit for navigation to complete
+      await Future.delayed(const Duration(seconds: 2));
+      
+      // Show the horoscope notification
+      await NotificationService().showHoroscopeNotification();
+    } catch (e) {
+      print('⚠️ Login success notification failed: $e');
     }
   }
 

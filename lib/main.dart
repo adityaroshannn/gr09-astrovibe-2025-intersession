@@ -9,13 +9,38 @@ import 'screens/profile_screen.dart';
 import 'screens/horoscope_screen.dart';
 import 'screens/zodiac_flashcards_screen.dart';
 import 'screens/compatibility_screen.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // Initialize notification service
+  await NotificationService().initialize();
+  
+  // Show horoscope notification on app start (cold start)
+  _showAppStartNotification();
+  
   runApp(const MyApp());
+}
+
+/// Show notification when app starts (cold start)
+void _showAppStartNotification() async {
+  try {
+    // Wait a bit for the app to fully initialize
+    await Future.delayed(const Duration(seconds: 3));
+    
+    // Check if user is already logged in
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // User is logged in, show the notification
+      await NotificationService().showHoroscopeNotification();
+    }
+  } catch (e) {
+    print('⚠️ App start notification failed: $e');
+  }
 }
 
 class MyApp extends StatelessWidget {

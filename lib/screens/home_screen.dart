@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:math' as math;
+import '../services/notification_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,6 +22,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _initAnimations();
+    _setupNotifications();
+  }
+
+  void _setupNotifications() async {
+    // Setup daily horoscope notifications after a short delay
+    // This ensures the user is fully logged in and the screen is loaded
+    await Future.delayed(const Duration(seconds: 2));
+    NotificationService().setupDailyHoroscope();
   }
 
   void _initAnimations() {
