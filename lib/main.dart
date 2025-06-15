@@ -9,6 +9,8 @@ import 'screens/profile_screen.dart';
 import 'screens/horoscope_screen.dart';
 import 'screens/zodiac_flashcards_screen.dart';
 import 'screens/compatibility_screen.dart';
+import 'screens/previous_horoscopes_screen.dart';
+import 'screens/review_horoscope_screen.dart';
 import 'services/notification_service.dart';
 
 void main() async {
@@ -93,6 +95,8 @@ class MyApp extends StatelessWidget {
         "/horoscope": (context) => HoroscopeScreen(),
         "/flashcards": (context) => ZodiacFlashcardsScreen(),
         "/compatibility": (context) => CompatibilityScreen(),
+        "/previous-horoscopes": (context) => PreviousHoroscopesScreen(),
+        "/review-horoscope": (context) => ReviewHoroscopeScreen(),
       },
     );
   }

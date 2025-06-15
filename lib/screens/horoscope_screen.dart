@@ -122,13 +122,17 @@ class _HoroscopeScreenState extends State<HoroscopeScreen>
         final zodiac = data?['zodiac'] as String?;
         
         if (zodiac != null) {
+          final horoscope = HoroscopeData.getHoroscopeForZodiac(zodiac);
           setState(() {
             userZodiac = zodiac;
-            horoscopeText = HoroscopeData.getHoroscopeForZodiac(zodiac);
+            horoscopeText = horoscope;
             financeText = HoroscopeData.getFinanceHoroscope(zodiac);
             relationshipText = HoroscopeData.getRelationshipHoroscope(zodiac);
             healthText = HoroscopeData.getHealthHoroscope(zodiac);
           });
+          
+          // Save today's horoscope to Firestore for review/archive
+          await _saveTodaysHoroscope(user.uid, zodiac, horoscope);
         } else {
           throw Exception('Zodiac sign not found in profile');
         }
@@ -153,6 +157,35 @@ class _HoroscopeScreenState extends State<HoroscopeScreen>
       if (horoscopeText != null) {
         _revealCard();
       }
+    }
+  }
+
+  Future<void> _saveTodaysHoroscope(String userId, String zodiac, String horoscope) async {
+    try {
+      // Get today's date in YYYY-MM-DD format
+      final today = DateTime.now();
+      final todayString = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+      
+      // Save to Firestore (only if it doesn't exist to avoid overwriting reviews)
+      final docRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('dailyHoroscopes')
+          .doc(todayString);
+      
+      final doc = await docRef.get();
+      if (!doc.exists) {
+        await docRef.set({
+          'zodiac': zodiac,
+          'horoscope': horoscope,
+          'date': Timestamp.fromDate(today),
+        });
+        print('✅ Today\'s horoscope saved to Firestore');
+      } else {
+        print('📅 Today\'s horoscope already exists in Firestore');
+      }
+    } catch (e) {
+      print('⚠️ Failed to save today\'s horoscope: $e');
     }
   }
 

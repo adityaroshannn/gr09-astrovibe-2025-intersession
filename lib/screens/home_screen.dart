@@ -262,6 +262,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               // Prominent Cosmic Horoscope Button
                               _buildCosmicHoroscopeButton(context),
                               
+                              const SizedBox(height: 20),
+                              
+                              // Review Today's Horoscope Button
+                              _buildReviewHoroscopeButton(context),
+                              
                               const SizedBox(height: 30),
                               
                               // Zodiac Flashcards Button
@@ -311,10 +316,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   ),
                                   _buildFeatureCard(
                                     context,
-                                    'Birth Chart',
-                                    Icons.auto_graph,
-                                    null,
-                                    isActive: false,
+                                    'Previous Horoscopes',
+                                    Icons.history,
+                                    '/previous-horoscopes',
+                                    isActive: true,
                                   ),
                                   _buildFeatureCard(
                                     context,
@@ -439,6 +444,87 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildReviewHoroscopeButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, '/review-horoscope'),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.amber.withOpacity(0.7),
+              Colors.orange.withOpacity(0.6),
+              Colors.deepOrange.withOpacity(0.7),
+              Colors.red.withOpacity(0.6),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.3),
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.amber.withOpacity(0.4),
+              blurRadius: 20,
+              spreadRadius: 3,
+            ),
+            BoxShadow(
+              color: Colors.orange.withOpacity(0.3),
+              blurRadius: 15,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '⭐',
+              style: TextStyle(fontSize: 32),
+            ),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Review Today\'s Horoscope ✨',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontFamily: 'Playfair Display',
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.5),
+                          offset: const Offset(0, 1),
+                          blurRadius: 3,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    'Rate your daily horoscope and share your cosmic experience',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withOpacity(0.9),
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
