@@ -253,6 +253,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               // Prominent Cosmic Horoscope Button
                               _buildCosmicHoroscopeButton(context),
                               
+                              const SizedBox(height: 30),
+                              
+                              // Zodiac Flashcards Button
+                              _buildFlashcardsButton(context),
+                              
                               const SizedBox(height: 60),
                       
                               Text(
@@ -285,7 +290,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     context,
                                     'Daily Horoscope',
                                     Icons.auto_awesome,
-                                    () => Navigator.pushNamed(context, '/horoscope'),
+                                    '/horoscope',
+                                    isActive: true,
+                                  ),
+                                  _buildFeatureCard(
+                                    context,
+                                    'Zodiac Cards',
+                                    Icons.style,
+                                    '/flashcards',
                                     isActive: true,
                                   ),
                                   _buildFeatureCard(
@@ -299,13 +311,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     context,
                                     'Compatibility',
                                     Icons.favorite,
-                                    null,
-                                    isActive: false,
-                                  ),
-                                  _buildFeatureCard(
-                                    context,
-                                    'Moon Phases',
-                                    Icons.nightlight_round,
                                     null,
                                     isActive: false,
                                   ),
@@ -428,9 +433,90 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildFeatureCard(BuildContext context, String title, IconData icon, VoidCallback? onTap, {required bool isActive}) {
+  Widget _buildFlashcardsButton(BuildContext context) {
     return GestureDetector(
-      onTap: isActive ? onTap : null,
+      onTap: () => Navigator.pushNamed(context, '/flashcards'),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(25),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.indigo.withOpacity(0.7),
+              Colors.deepPurple.withOpacity(0.6),
+              Colors.purple.withOpacity(0.8),
+              Colors.blue.withOpacity(0.6),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.3),
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.indigo.withOpacity(0.4),
+              blurRadius: 25,
+              spreadRadius: 3,
+            ),
+            BoxShadow(
+              color: Colors.purple.withOpacity(0.3),
+              blurRadius: 15,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '🃏',
+              style: TextStyle(fontSize: 40),
+            ),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                                         'Zodiac Cards',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontFamily: 'Playfair Display',
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.5),
+                          offset: const Offset(0, 1),
+                          blurRadius: 3,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                                         'Learn about zodiac signs with interactive cards',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.9),
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureCard(BuildContext context, String title, IconData icon, String? route, {required bool isActive}) {
+    return GestureDetector(
+      onTap: isActive && route != null ? () => Navigator.pushNamed(context, route) : null,
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
