@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -14,6 +17,9 @@ class _ProfileScreenState extends State<ProfileScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  
+  final ImagePicker _picker = ImagePicker();
+  bool _isUploadingImage = false;
   
   @override
   void initState() {
@@ -252,6 +258,128 @@ class _ProfileScreenState extends State<ProfileScreen>
           backgroundColor: Colors.red,
         ),
       );
+    }
+  }
+  
+  Future<void> _pickAndUploadImage() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Authentication error - please log in again'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    try {
+      // Show image source selection
+      final ImageSource? source = await showModalBottomSheet<ImageSource>(
+        context: context,
+        backgroundColor: Colors.transparent,
+        builder: (context) => Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.purple.withOpacity(0.9),
+                Colors.indigo.withOpacity(0.9),
+              ],
+            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: SafeArea(
+            child: Wrap(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_library, color: Colors.white),
+                  title: const Text('Gallery', style: TextStyle(color: Colors.white)),
+                  onTap: () => Navigator.pop(context, ImageSource.gallery),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_camera, color: Colors.white),
+                  title: const Text('Camera', style: TextStyle(color: Colors.white)),
+                  onTap: () => Navigator.pop(context, ImageSource.camera),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.cancel, color: Colors.white),
+                  title: const Text('Cancel', style: TextStyle(color: Colors.white)),
+                  onTap: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      if (source == null) return;
+
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 80,
+      );
+
+      if (image == null) return;
+
+      setState(() {
+        _isUploadingImage = true;
+      });
+
+      // Upload to Firebase Storage
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('profile_photos')
+          .child('${user.uid}.jpg');
+
+      final uploadTask = storageRef.putFile(File(image.path));
+      
+      // Show upload progress
+      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+        final progress = snapshot.bytesTransferred / snapshot.totalBytes;
+        // You could show progress here if needed
+      });
+
+      final TaskSnapshot snapshot = await uploadTask;
+      final String downloadUrl = await snapshot.ref.getDownloadURL();
+
+      // Update Firestore with photo URL
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .set({
+        'photoUrl': downloadUrl,
+      }, SetOptions(merge: true));
+
+      setState(() {
+        _isUploadingImage = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile picture updated successfully! ✨'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isUploadingImage = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error uploading image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
   
@@ -508,28 +636,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Container(
-                                          width: 100,
-                                          height: 100,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            gradient: LinearGradient(
-                                              colors: [
-                                                Colors.purple.withOpacity(0.3),
-                                                Colors.blue.withOpacity(0.3),
-                                              ],
-                                            ),
-                                            border: Border.all(
-                                              color: Colors.white.withOpacity(0.3),
-                                              width: 3,
-                                            ),
-                                          ),
-                                          child: const Icon(
-                                            Icons.person_outline,
-                                            size: 50,
-                                            color: Colors.white70,
-                                          ),
-                                        ),
+                                        _buildProfileAvatar(null),
                                         const SizedBox(height: 32),
                                         Text(
                                           'Complete Your Cosmic Profile',
@@ -662,35 +769,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   const SizedBox(height: 20),
                                   
                                   // Profile Photo Placeholder
-                                  Container(
-                                    width: 120,
-                                    height: 120,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Colors.purple.withOpacity(0.3),
-                                          Colors.blue.withOpacity(0.3),
-                                        ],
-                                      ),
-                                      border: Border.all(
-                                        color: Colors.white.withOpacity(0.3),
-                                        width: 3,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.purple.withOpacity(0.4),
-                                          blurRadius: 20,
-                                          spreadRadius: 2,
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Icon(
-                                      Icons.person,
-                                      size: 60,
-                                      color: Colors.white70,
-                                    ),
-                                  ),
+                                  _buildProfileAvatar(data['photoUrl'] as String?),
                                   
                                   const SizedBox(height: 40),
                                   
@@ -933,6 +1012,119 @@ class _ProfileScreenState extends State<ProfileScreen>
           ),
         ],
       ),
+    );
+  }
+  
+  Widget _buildProfileAvatar(String? photoUrl) {
+    return Stack(
+      children: [
+        Container(
+          width: 120,
+          height: 120,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [
+                Colors.purple.withOpacity(0.3),
+                Colors.blue.withOpacity(0.3),
+              ],
+            ),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.4),
+              width: 3,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.purple.withOpacity(0.3),
+                blurRadius: 20,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+                     child: ClipOval(
+             child: photoUrl != null && photoUrl.isNotEmpty
+                 ? Image.network(
+                     photoUrl,
+                     fit: BoxFit.cover,
+                     width: 120,
+                     height: 120,
+                     loadingBuilder: (context, child, loadingProgress) {
+                       if (loadingProgress == null) return child;
+                       return Container(
+                         width: 120,
+                         height: 120,
+                         decoration: BoxDecoration(
+                           shape: BoxShape.circle,
+                           color: Colors.purple.withOpacity(0.1),
+                         ),
+                         child: const Center(
+                           child: CircularProgressIndicator(
+                             strokeWidth: 2,
+                             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                           ),
+                         ),
+                       );
+                     },
+                     errorBuilder: (context, error, stackTrace) {
+                       return const Icon(
+                         Icons.account_circle,
+                         size: 80,
+                         color: Colors.white70,
+                       );
+                     },
+                   )
+                 : const Icon(
+                     Icons.account_circle,
+                     size: 80,
+                     color: Colors.white70,
+                   ),
+           ),
+        ),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: GestureDetector(
+            onTap: _isUploadingImage ? null : _pickAndUploadImage,
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.purple.withOpacity(0.9),
+                    Colors.indigo.withOpacity(0.9),
+                  ],
+                ),
+                border: Border.all(
+                  color: Colors.white,
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.purple.withOpacity(0.5),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: _isUploadingImage
+                  ? const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Icon(
+                      Icons.camera_alt,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 } 
