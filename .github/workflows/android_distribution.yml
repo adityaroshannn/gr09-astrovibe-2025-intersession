@@ -43,6 +43,7 @@ jobs:
           --app "${{ secrets.FIREBASE_APP_ID }}" \
           --token "${{ secrets.FIREBASE_TOKEN }}" \
           --groups "testers" \
+          --testers "adityaroshan.sharma@gmail.com" \
           --release-notes "Automated build from GitHub Actions - Commit: ${{ github.sha }}"
       
     - name: Upload APK artifact
