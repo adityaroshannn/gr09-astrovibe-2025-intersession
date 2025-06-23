@@ -114,7 +114,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final email = _emailController.text.trim().toLowerCase();
       final password = _passwordController.text;
       
-      print('Attempting registration with email: $email'); // Debug log
+      print('🔄 Attempting registration with email: $email'); // Debug log
       
       final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
@@ -124,7 +124,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
 
       if (credential.user != null) {
-        print('Registration successful for user: ${credential.user!.email}'); // Debug log
+        print('✅ Registration successful for user: ${credential.user!.email}'); // Debug log
+        print('🔑 User ID: ${credential.user!.uid}');
         
         // Store additional user data in Firestore
         try {
@@ -136,9 +137,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             'dob': _selectedDate,
             'zodiac': getZodiacSign(_selectedDate!),
           });
+          print('✅ User data stored in Firestore');
         } catch (firestoreError) {
-          print('Firestore error: $firestoreError');
-          print('Continuing without Firestore storage...');
+          print('⚠️ Firestore error: $firestoreError');
+          print('⚠️ Continuing without Firestore storage...');
           // Don't block registration if Firestore fails
         }
         
@@ -156,36 +158,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       
+      print('🔥 Firebase Auth registration error: ${e.code} - ${e.message}');
       String message = 'Registration failed';
       switch (e.code) {
         case 'weak-password':
-          message = 'The password provided is too weak.';
+          message = 'The password provided is too weak. Please use at least 6 characters.';
           break;
         case 'email-already-in-use':
-          message = 'The account already exists for that email.';
+          message = 'An account already exists for that email. Please try logging in instead.';
           break;
         case 'invalid-email':
-          message = 'The email address is not valid.';
+          message = 'The email address format is not valid.';
           break;
         case 'operation-not-allowed':
-          message = 'Email/password accounts are not enabled.';
+          message = 'Email/password accounts are not enabled. Please contact support.';
+          break;
+        case 'network-request-failed':
+          message = 'Network error. Please check your internet connection.';
           break;
         default:
-          message = e.message ?? 'Registration failed';
+          message = e.message ?? 'Registration failed. Please try again.';
       }
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
           backgroundColor: Colors.red,
+          duration: Duration(seconds: 6),
         ),
       );
     } catch (e) {
       if (!mounted) return;
+      print('❌ Unexpected registration error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('An error occurred: $e'),
+          content: Text('An unexpected error occurred during registration. Please try again.'),
           backgroundColor: Colors.red,
+          duration: Duration(seconds: 4),
         ),
       );
     } finally {
